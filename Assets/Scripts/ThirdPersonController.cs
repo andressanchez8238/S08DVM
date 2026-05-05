@@ -18,6 +18,8 @@ public class ThirdPersonController : MonoBehaviour
     public CinemachineCamera characterAimCamera;
     [FoldoutGroup("References")]
     public LineRenderer RayPrefab;
+    [FoldoutGroup("References")]
+    public GameObject granadePrefab;
 
 
     [FoldoutGroup("Controller")]
@@ -30,6 +32,8 @@ public class ThirdPersonController : MonoBehaviour
     public float jumpForce = 10;
     [FoldoutGroup("Controller")]
     public float pushForce = 4;
+
+    public float throwForce = 10f;
 
     [FoldoutGroup("Controller/Dash")]
     private bool IsDashing;
@@ -78,6 +82,11 @@ public class ThirdPersonController : MonoBehaviour
     public UnityEvent OnHit;
     public UnityEvent OnUpgrade;
 
+
+    public ParticleSystem humo;
+
+
+
     private void Awake()
     {
        
@@ -98,6 +107,7 @@ public class ThirdPersonController : MonoBehaviour
 
         inputs.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         inputs.Player.Move.canceled += ctx => moveInput = Vector2.zero;
+        inputs.Player.ThrowGranade.performed += ctx => ThrowSmt(ctx);
 
 
         inputs.Player.Jump.performed += OnJump;
@@ -326,6 +336,7 @@ public class ThirdPersonController : MonoBehaviour
         if(hit.collider != null)
         {
             //  Physics.Raycast(transform.position, transform.right, out RaycastHit hitRight, rayLenght);
+            humo.Play(hit.collider.gameObject);
             LineRenderer ray = Instantiate(RayPrefab, transform.position, Quaternion.identity);
             ray.gameObject.transform.position = WeaponShootAnchor.position;
 
@@ -338,10 +349,19 @@ public class ThirdPersonController : MonoBehaviour
          
         }
     }
+
+    private void ThrowSmt(InputAction.CallbackContext context)
+    {
+        GameObject granade =Instantiate(granadePrefab,transform.position,Quaternion.identity);
+        Vector3 dir = characterCamera.transform.forward;
+        granade.GetComponent<Rigidbody>().AddForce(dir * throwForce, ForceMode.Impulse);
+    }
+
     public float GetSpeed()
     {
         return Mathf.Abs(controller.velocity.magnitude);
     }
+
  
     private void OnDrawGizmos()
     {
