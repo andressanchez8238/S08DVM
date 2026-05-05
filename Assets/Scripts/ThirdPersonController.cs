@@ -19,7 +19,11 @@ public class ThirdPersonController : MonoBehaviour
     [FoldoutGroup("References")]
     public LineRenderer RayPrefab;
     [FoldoutGroup("References")]
-    public GameObject granadePrefab;
+    public LayerMask enemyMask;
+    [FoldoutGroup("References")]
+    public GameObject GranadePrefab;
+    [FoldoutGroup("References")]
+    public GameObject TurretPrefab;
 
 
     [FoldoutGroup("Controller")]
@@ -32,8 +36,8 @@ public class ThirdPersonController : MonoBehaviour
     public float jumpForce = 10;
     [FoldoutGroup("Controller")]
     public float pushForce = 4;
+    
 
-    public float throwForce = 10f;
 
     [FoldoutGroup("Controller/Dash")]
     private bool IsDashing;
@@ -61,10 +65,13 @@ public class ThirdPersonController : MonoBehaviour
 
     public bool aimMode = false;
 
+    
     [FoldoutGroup("Attack")]
     public Transform WeaponShootAnchor;
     [FoldoutGroup("Attack")]
     public Vector2 MouseMovement;
+    [FoldoutGroup("Granade")]
+    public float throwForce = 1;
     [FoldoutGroup("Attack")]
     [SerializeField] private float sensitivity = 2f;
     [SerializeField] private float yaw;
@@ -81,11 +88,6 @@ public class ThirdPersonController : MonoBehaviour
     public UnityEvent OnDead;
     public UnityEvent OnHit;
     public UnityEvent OnUpgrade;
-
-
-    public ParticleSystem humo;
-
-
 
     private void Awake()
     {
@@ -107,7 +109,6 @@ public class ThirdPersonController : MonoBehaviour
 
         inputs.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         inputs.Player.Move.canceled += ctx => moveInput = Vector2.zero;
-        inputs.Player.ThrowGranade.performed += ctx => ThrowSmt(ctx);
 
 
         inputs.Player.Jump.performed += OnJump;
@@ -134,9 +135,9 @@ public class ThirdPersonController : MonoBehaviour
         inputs.Player.Look.performed += ctx => MouseMovement = ctx.ReadValue<Vector2>();
         inputs.Player.Look.canceled += ctx => MouseMovement = Vector2.zero;
         // inputs.Player.Sprint.performed += OnDash;
-    }
 
- 
+        inputs.Player.ThrowGranade.performed += ThrowSmt;
+    }
 
     void Start()
     {
@@ -330,13 +331,13 @@ public class ThirdPersonController : MonoBehaviour
     {
         OnAttackEvent?.Invoke();
         source.GenerateImpulse();
-        Debug.Log("Attack");
-        Physics.Raycast(WeaponShootAnchor.position,characterAimCamera.transform.forward,out RaycastHit hit,100);
+        //Debug.Log("Attack");
+        //if (Physics.SphereCast(WeaponShootAnchor.position,5f, characterAimCamera.transform.forward, out RaycastHit hit, 100f, enemyMask))
 
-        if(hit.collider != null)
+        if (Physics.Raycast(WeaponShootAnchor.position, characterAimCamera.transform.forward, out RaycastHit hit, 100f, enemyMask))
         {
+            Debug.Log("Hit smt");
             //  Physics.Raycast(transform.position, transform.right, out RaycastHit hitRight, rayLenght);
-            humo.Play(hit.collider.gameObject);
             LineRenderer ray = Instantiate(RayPrefab, transform.position, Quaternion.identity);
             ray.gameObject.transform.position = WeaponShootAnchor.position;
 
@@ -345,23 +346,26 @@ public class ThirdPersonController : MonoBehaviour
             ray.SetPosition(1, hit.point);
 
 
-            
-         
+            GameObject turret = Instantiate(TurretPrefab, hit.point, Quaternion.identity);
+            turret.transform.up = hit.normal;
         }
-    }
+        else
+        {
+            Debug.Log("Miss");
+        }
 
-    private void ThrowSmt(InputAction.CallbackContext context)
+    }
+    private void ThrowSmt(InputAction.CallbackContext ctx)
     {
-        GameObject granade =Instantiate(granadePrefab,transform.position,Quaternion.identity);
+        GameObject granade = Instantiate(GranadePrefab, transform.position + gameObject.transform.forward*1.5f, Quaternion.identity);
         Vector3 dir = characterCamera.transform.forward;
+
         granade.GetComponent<Rigidbody>().AddForce(dir * throwForce, ForceMode.Impulse);
     }
-
     public float GetSpeed()
     {
         return Mathf.Abs(controller.velocity.magnitude);
     }
-
  
     private void OnDrawGizmos()
     {

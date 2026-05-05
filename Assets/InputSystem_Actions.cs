@@ -185,7 +185,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""ThrowGranade"",
                     ""type"": ""Button"",
-                    ""id"": ""2eec47df-9550-4557-92da-a551eef2f40f"",
+                    ""id"": ""4617f2c8-2146-41be-b08d-77b3994bc3e3"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -591,11 +591,11 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""917b0c5a-17ad-4de1-8bb1-474eb94dd5a0"",
+                    ""id"": ""d0b38b77-78a8-4820-b637-adc1b55d8087"",
                     ""path"": ""<Keyboard>/g"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": "";Gamepad"",
                     ""action"": ""ThrowGranade"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
